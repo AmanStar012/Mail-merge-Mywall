@@ -1,0 +1,8 @@
+{
+  "name": "mail-merge-netlify",
+  "version": "1.0.0",
+  "description": "Mail merge tool with Netlify Functions backend",
+  "dependencies": {
+    "nodemailer": "^6.9.8"
+  }
+}

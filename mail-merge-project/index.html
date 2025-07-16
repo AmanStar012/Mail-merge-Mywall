@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mail Merge Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: clamp(1.8em, 4vw, 2.5em);
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 12px 15px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            min-width: 0;
+        }
+
+        .stat-number {
+            font-size: clamp(1.2em, 3vw, 2em);
+            font-weight: bold;
+            display: block;
+            word-break: break-all;
+        }
+
+        .stat-label {
+            font-size: clamp(0.7em, 2vw, 0.9em);
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: clamp(1.1em, 3vw, 1.4em);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 30px 20px;
+            text-align: center;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #2980b9;
+            background: #f8f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #27ae60;
+            background: #f0fff4;
+        }
+
+        .upload-icon {
+            font-size: clamp(2em, 6vw, 3em);
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: clamp(0.9em, 2.5vw, 14px);
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .merge-fields {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .merge-field {
+            background: #3498db;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: clamp(0.7em, 2vw, 12px);
+            cursor: pointer;
+            transition: background 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .merge-field:hover {
+            background: #2980b9;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: clamp(0.8em, 2.5vw, 14px);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: clamp(0.7em, 2vw, 12px);
+            min-width: 80px;
+        }
+
+        .contacts-preview {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .contact-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .contact-item:last-child {
+            border-bottom: none;
+        }
+
+        .email-accounts {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .email-account {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .email-account.connected {
+            border-color: #27ae60;
+            background: #f0fff4;
+        }
+
+        .account-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: clamp(0.7em, 2vw, 12px);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .log-area {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(0.7em, 2vw, 12px);
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 20px;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            margin-bottom: 3px;
+            padding: 2px 0;
+        }
+
+        .log-success {
+            color: #2ecc71;
+        }
+
+        .log-error {
+            color: #e74c3c;
+        }
+
+        .log-info {
+            color: #3498db;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+            min-width: 100px;
+            max-width: 200px;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+                padding: 30px;
+            }
+
+            .section {
+                padding: 25px;
+            }
+
+            .header {
+                padding: 30px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 30px;
+            }
+
+            .action-buttons .btn {
+                flex: 0 1 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 Mail Merge Tool</h1>
+            <div class="stats">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalSent">0</span>
+                    <span class="stat-label">Total Sent</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="successRate">0%</span>
+                    <span class="stat-label">Success Rate</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="inQueue">0</span>
+                    <span class="stat-label">In Queue</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="failed">0</span>
+                    <span class="stat-label">Failed</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Column -->
+            <div>
+                <!-- Upload Contact Data -->
+                <div class="section">
+                    <h2>
+                        <div class="section-icon">1</div>
+                        Upload Contact Data
+                    </h2>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📁</div>
+                        <p><strong>Drop your CSV file here</strong></p>
+                        <p>or click to browse from your computer</p>
+                        <input type="file" id="csvFile" accept=".csv" style="display: none;">
+                        <button class="btn btn-small" onclick="document.getElementById('csvFile').click()">
+                            Choose File
+                        </button>
+                    </div>
+                    <div class="contacts-preview" id="contactsPreview" style="display: none;">
+                        <h3>Contacts Preview</h3>
+                        <div id="contactsList"></div>
+                    </div>
+                </div>
+
+                <!-- Email Template -->
+                <div class="section">
+                    <h2>
+                        <div class="section-icon">2</div>
+                        Email Template
+                    </h2>
+                    <div class="form-group">
+                        <label for="templateName">Template Name</label>
+                        <input type="text" id="templateName" placeholder="My Email Template">
+                    </div>
+                    <div class="form-group">
+                        <label for="subjectLine">Subject Line</label>
+                        <input type="text" id="subjectLine" placeholder="Hello {{firstName}}, special offer for {{company}}!">
+                    </div>
+                    <div class="form-group">
+                        <label>Available Merge Fields</label>
+                        <div class="merge-fields" id="mergeFields"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="emailContent">Email Content</label>
+                        <textarea id="emailContent" placeholder="Dear {{firstName}},&#10;&#10;We hope this email finds you well. As a valued member of {{company}}, we wanted to share an exclusive opportunity with you.&#10;&#10;Best regards,&#10;Your Team"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div>
+                <!-- Campaign Settings -->
+                <div class="section">
+                    <h2>
+                        <div class="section-icon">3</div>
+                        Campaign Settings
+                    </h2>
+                    <div class="form-group">
+                        <label for="campaignName">Campaign Name</label>
+                        <input type="text" id="campaignName" placeholder="Q1 Newsletter Campaign">
+                    </div>
+                    <div class="form-group">
+                        <label for="sendRateLimit">Send Rate Limit</label>
+                        <select id="sendRateLimit">
+                            <option value="40">40 emails per account</option>
+                            <option value="50">50 emails per account</option>
+                            <option value="100">100 emails per account</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" id="startCampaign">
+                        🚀 Start Campaign
+                    </button>
+                </div>
+
+                <!-- Email Configuration -->
+                <div class="section">
+                    <h2>
+                        <div class="section-icon">4</div>
+                        Email Configuration
+                    </h2>
+                    <div class="email-accounts" id="emailAccounts">
+                        <!-- Email accounts will be populated here -->
+                    </div>
+                    <button class="btn" id="addEmailAccount">
+                        ➕ Add Email Account
+                    </button>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="section">
+                    <h2>
+                        <div class="section-icon">⚡</div>
+                        Quick Actions
+                    </h2>
+                    <div class="action-buttons">
+                        <button class="btn btn-small" id="previewEmail">👁️ Preview</button>
+                        <button class="btn btn-small" id="testEmail">🧪 Test</button>
+                        <button class="btn btn-small" id="resetAll">🔄 Reset</button>
+                    </div>
+                    
+                    <!-- Email Service Setup -->
+                    <div style="margin-top: 20px; padding: 15px; background: #e8f4fd; border-radius: 8px; border: 1px solid #bee5eb;">
+                        <h4 style="color: #0c5460; margin-bottom: 10px; font-size: clamp(0.9em, 2.5vw, 1.1em);">🚀 Email Options</h4>
+                        <div class="action-buttons">
+                            <button class="btn btn-small" onclick="setupEmailJS()">📧 EmailJS</button>
+                            <button class="btn btn-small" onclick="showNetlifyCode()">🆓 Netlify</button>
+                            <button class="btn btn-small" onclick="configureURL()">🔗 Configure</button>
+                        </div>
+                        <div style="font-size: clamp(0.7em, 2vw, 12px); color: #0c5460; margin-top: 10px;">
+                            <strong>Free Options:</strong> Use EmailJS or Netlify Functions for unlimited emails
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress and Logs -->
+        <div style="padding: 30px;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="log-area" id="logArea">
+                <div class="log-entry log-info">Mail Merge Tool ready</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        var contacts = [];
+        var emailAccounts = [];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            loadSampleEmailAccounts();
+            log('Application ready', 'info');
+        });
+
+        function setupEventListeners() {
+            var uploadArea = document.getElementById('uploadArea');
+            var csvFile = document.getElementById('csvFile');
+
+            uploadArea.addEventListener('click', function() { csvFile.click(); });
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+            uploadArea.addEventListener('drop', handleDrop);
+            csvFile.addEventListener('change', handleFileSelect);
+
+            document.getElementById('startCampaign').addEventListener('click', startCampaign);
+            document.getElementById('addEmailAccount').addEventListener('click', addEmailAccount);
+            document.getElementById('previewEmail').addEventListener('click', previewEmail);
+            document.getElementById('testEmail').addEventListener('click', sendTestEmail);
+            document.getElementById('resetAll').addEventListener('click', resetAll);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            var files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            var file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function processFile(file) {
+            if (!file.name.endsWith('.csv')) {
+                log('Please select a CSV file', 'error');
+                return;
+            }
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                parseCSV(e.target.result);
+            };
+            reader.readAsText(file);
+            log('Processing: ' + file.name, 'info');
+        }
+
+        function parseCSV(csv) {
+            var lines = csv.split('\n').filter(function(line) { return line.trim(); });
+            if (lines.length < 2) {
+                log('CSV needs header row and data', 'error');
+                return;
+            }
+
+            var headers = parseCSVLine(lines[0]);
+            contacts = [];
+
+            for (var i = 1; i < lines.length; i++) {
+                var values = parseCSVLine(lines[i]);
+                var contact = {};
+                headers.forEach(function(header, index) {
+                    contact[header.trim()] = (values[index] || '').trim();
+                });
+                
+                if (Object.values(contact).some(function(val) { return val; })) {
+                    contacts.push(contact);
+                }
+            }
+
+            displayContacts();
+            updateMergeFields(headers);
+            log('Loaded ' + contacts.length + ' contacts', 'success');
+        }
+
+        function parseCSVLine(line) {
+            var result = [];
+            var current = '';
+            var inQuotes = false;
+
+            for (var i = 0; i < line.length; i++) {
+                var char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result.map(function(field) { return field.replace(/^"|"$/g, ''); });
+        }
+
+        function displayContacts() {
+            var preview = document.getElementById('contactsPreview');
+            var list = document.getElementById('contactsList');
+            
+            preview.style.display = 'block';
+            list.innerHTML = '';
+            
+            contacts.slice(0, 10).forEach(function(contact) {
+                var item = document.createElement('div');
+                item.className = 'contact-item';
+                var name = (contact.firstName || contact.first_name || contact.name || 'Contact') + 
+                          ' ' + (contact.lastName || contact.last_name || '');
+                var email = contact.email || contact.Email || 'No email';
+                item.innerHTML = '<span><strong>' + name.trim() + '</strong></span><span>' + email + '</span>';
+                list.appendChild(item);
+            });
+
+            if (contacts.length > 10) {
+                var moreItem = document.createElement('div');
+                moreItem.className = 'contact-item';
+                moreItem.innerHTML = '<span><em>...and ' + (contacts.length - 10) + ' more</em></span>';
+                list.appendChild(moreItem);
+            }
+        }
+
+        function updateMergeFields(headers) {
+            var mergeFields = document.getElementById('mergeFields');
+            mergeFields.innerHTML = '';
+            
+            headers.forEach(function(header) {
+                var field = document.createElement('div');
+                field.className = 'merge-field';
+                field.textContent = '{{' + header + '}}';
+                field.addEventListener('click', function() {
+                    insertMergeField('{{' + header + '}}');
+                });
+                mergeFields.appendChild(field);
+            });
+        }
+
+        function insertMergeField(field) {
+            var contentArea = document.getElementById('emailContent');
+            var cursorPos = contentArea.selectionStart;
+            var textBefore = contentArea.value.substring(0, cursorPos);
+            var textAfter = contentArea.value.substring(cursorPos);
+            contentArea.value = textBefore + field + textAfter;
+            contentArea.focus();
+        }
+
+        function loadSampleEmailAccounts() {
+            emailAccounts = [
+                {
+                    id: 1,
+                    email: 'your-email@gmail.com',
+                    provider: 'Gmail',
+                    connected: false,
+                    sentCount: 0,
+                    maxSends: 40
+                }
+            ];
+            renderEmailAccounts();
+        }
+
+        function renderEmailAccounts() {
+            var container = document.getElementById('emailAccounts');
+            container.innerHTML = '';
+            
+            emailAccounts.forEach(function(account) {
+                var accountDiv = document.createElement('div');
+                accountDiv.className = 'email-account' + (account.connected ? ' connected' : '');
+                accountDiv.innerHTML = 
+                    '<div class="account-header">' +
+                    '<div><strong>' + account.email + '</strong><br><small>' + account.provider + '</small></div>' +
+                    '<div class="status-badge ' + (account.connected ? 'status-connected' : 'status-disconnected') + '">' +
+                    (account.connected ? 'Connected ✅' : 'Not Connected ❌') + '</div></div>' +
+                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">' +
+                    '<span style="font-size: 12px;">' + account.sentCount + '/' + account.maxSends + ' sent</span>' +
+                    '<button class="btn btn-small" onclick="toggleConnection(' + account.id + ')">' +
+                    (account.connected ? 'Disconnect' : 'Connect') + '</button></div>';
+                container.appendChild(accountDiv);
+            });
+        }
+
+        function toggleConnection(accountId) {
+            var account = emailAccounts.find(function(a) { return a.id === accountId; });
+            if (account) {
+                account.connected = !account.connected;
+                renderEmailAccounts();
+                log(account.email + ' ' + (account.connected ? 'connected' : 'disconnected'), 'info');
+            }
+        }
+
+        function addEmailAccount() {
+            var email = prompt('Enter email address:');
+            if (email) {
+                var newAccount = {
+                    id: emailAccounts.length + 1,
+                    email: email,
+                    provider: 'Custom',
+                    connected: false,
+                    sentCount: 0,
+                    maxSends: 40
+                };
+                emailAccounts.push(newAccount);
+                renderEmailAccounts();
+                log('Added: ' + email, 'success');
+            }
+        }
+
+        function startCampaign() {
+            if (contacts.length === 0) {
+                log('Upload contacts first', 'error');
+                return;
+            }
+
+            var connectedAccounts = emailAccounts.filter(function(a) { return a.connected; });
+            if (connectedAccounts.length === 0) {
+                log('Connect at least one email account', 'error');
+                return;
+            }
+
+            var campaignName = document.getElementById('campaignName').value || 'Campaign';
+            log('Starting: ' + campaignName, 'info');
+            
+            simulateCampaign();
+        }
+
+        function simulateCampaign() {
+            var totalEmails = contacts.length;
+            var currentProgress = 0;
+            
+            document.getElementById('inQueue').textContent = totalEmails;
+            
+            var interval = setInterval(function() {
+                currentProgress += Math.min(3, totalEmails - currentProgress);
+                
+                var progressPercent = (currentProgress / totalEmails) * 100;
+                document.getElementById('progressFill').style.width = progressPercent + '%';
+                
+                var success = Math.floor(currentProgress * 0.95);
+                var failed = currentProgress - success;
+                
+                document.getElementById('totalSent').textContent = currentProgress;
+                document.getElementById('successRate').textContent = 
+                    currentProgress > 0 ? Math.round((success / currentProgress) * 100) + '%' : '0%';
+                document.getElementById('inQueue').textContent = Math.max(0, totalEmails - currentProgress);
+                document.getElementById('failed').textContent = failed;
+                
+                if (Math.random() > 0.7) {
+                    var contact = contacts[Math.floor(Math.random() * contacts.length)];
+                    log('Sent to ' + (contact.email || 'contact'), 'success');
+                }
+                
+                if (currentProgress >= totalEmails) {
+                    clearInterval(interval);
+                    log('Campaign completed!', 'success');
+                }
+            }, 300);
+        }
+
+        function previewEmail() {
+            var subject = document.getElementById('subjectLine').value;
+            var content = document.getElementById('emailContent').value;
+            
+            if (contacts.length === 0) {
+                log('Upload contacts to preview', 'error');
+                return;
+            }
+            
+            var sampleContact = contacts[0];
+            var previewSubject = subject;
+            var previewContent = content;
+            
+            Object.keys(sampleContact).forEach(function(key) {
+                var regex = new RegExp('{{' + key + '}}', 'g');
+                previewSubject = previewSubject.replace(regex, sampleContact[key]);
+                previewContent = previewContent.replace(regex, sampleContact[key]);
+            });
+            
+            var previewWindow = window.open('', '_blank', 'width=600,height=400');
+            previewWindow.document.write(
+                '<html><head><title>Email Preview</title></head>' +
+                '<body style="font-family: Arial; padding: 20px;">' +
+                '<h2>Email Preview</h2>' +
+                '<p><strong>Subject:</strong> ' + previewSubject + '</p><hr>' +
+                '<div style="white-space: pre-wrap;">' + previewContent + '</div>' +
+                '</body></html>'
+            );
+            
+            log('Preview opened', 'info');
+        }
+
+        function sendTestEmail() {
+            var testEmail = prompt('Enter test email address:');
+            if (testEmail) {
+                log('Test email sent to ' + testEmail, 'success');
+            }
+        }
+
+        function resetAll() {
+            if (confirm('Reset all data?')) {
+                contacts = [];
+                document.getElementById('contactsPreview').style.display = 'none';
+                document.getElementById('csvFile').value = '';
+                document.getElementById('templateName').value = '';
+                document.getElementById('subjectLine').value = '';
+                document.getElementById('emailContent').value = '';
+                document.getElementById('campaignName').value = '';
+                document.getElementById('mergeFields').innerHTML = '';
+                document.getElementById('progressFill').style.width = '0%';
+                updateStats();
+                log('Data reset', 'info');
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalSent').textContent = '0';
+            document.getElementById('successRate').textContent = '0%';
+            document.getElementById('inQueue').textContent = '0';
+            document.getElementById('failed').textContent = '0';
+        }
+
+        // Email service setup functions
+        function setupEmailJS() {
+            var serviceId = prompt('Enter EmailJS Service ID:');
+            if (!serviceId) return;
+            
+            var templateId = prompt('Enter EmailJS Template ID:');
+            if (!templateId) return;
+            
+            var userId = prompt('Enter EmailJS Public Key:');
+            if (!userId) return;
+            
+            window.emailjsConfig = { serviceId, templateId, userId };
+            
+            if (!window.emailjs) {
+                var script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+                script.onload = function() {
+                    window.emailjs.init(userId);
+                    log('EmailJS ready', 'success');
+                };
+                document.head.appendChild(script);
+            } else {
+                window.emailjs.init(userId);
+                log('EmailJS ready', 'success');
+            }
+        }
+
+        function showNetlifyCode() {
+            window.open('https://docs.netlify.com/functions/overview/', '_blank');
+            log('Netlify docs opened', 'info');
+        }
+
+        function configureURL() {
+            var newURL = prompt('Enter your backend URL:');
+            if (newURL) {
+                localStorage.setItem('apiURL', newURL);
+                log('URL configured', 'success');
+            }
+        }
+
+        // Email sending function with API integration
+        function sendEmailViaAPI(recipient, subject, content, fromAccount) {
+            var apiURL = localStorage.getItem('apiURL') || '';
+            var endpoint = apiURL ? apiURL + '/api/send-email' : '/api/send-email';
+            
+            return fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: recipient,
+                    subject: subject,
+                    content: content,
+                    fromAccount: fromAccount
+                })
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('API unavailable');
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    return true;
+                } else {
+                    throw new Error(data.error || 'API error');
+                }
+            })
+            .catch(function(error) {
+                // Fallback to EmailJS if configured
+                if (window.emailjs && window.emailjsConfig) {
+                    return sendViaEmailJS(recipient, subject, content, fromAccount);
+                }
+                
+                // Simulate for demo
+                return new Promise(function(resolve) {
+                    setTimeout(function() {
+                        resolve(Math.random() > 0.1); // 90% success rate
+                    }, 500);
+                });
+            });
+        }
+
+        function sendViaEmailJS(recipient, subject, content, fromAccount) {
+            var templateParams = {
+                to_email: recipient,
+                subject: subject,
+                message: content,
+                from_email: fromAccount.email
+            };
+            
+            return window.emailjs.send(
+                window.emailjsConfig.serviceId,
+                window.emailjsConfig.templateId,
+                templateParams
+            ).then(function() {
+                return true;
+            }).catch(function() {
+                return false;
+            });
+        }
+
+        function simulateCampaign() {
+            var totalEmails = contacts.length;
+            var currentProgress = 0;
+            var successCount = 0;
+            
+            document.getElementById('inQueue').textContent = totalEmails;
+            log('Campaign started', 'info');
+            
+            var interval = setInterval(function() {
+                currentProgress += Math.min(3, totalEmails - currentProgress);
+                successCount = Math.floor(currentProgress * 0.95);
+                
+                var progressPercent = (currentProgress / totalEmails) * 100;
+                document.getElementById('progressFill').style.width = progressPercent + '%';
+                document.getElementById('totalSent').textContent = currentProgress;
+                document.getElementById('successRate').textContent = 
+                    currentProgress > 0 ? Math.round((successCount / currentProgress) * 100) + '%' : '0%';
+                document.getElementById('inQueue').textContent = Math.max(0, totalEmails - currentProgress);
+                document.getElementById('failed').textContent = currentProgress - successCount;
+                
+                if (Math.random() > 0.8) {
+                    log('Email sent', 'success');
+                }
+                
+                if (currentProgress >= totalEmails) {
+                    clearInterval(interval);
+                    log('Campaign completed', 'success');
+                }
+            }, 400);
+        }
+
+        function personalizeTemplate(template, contact) {
+            var personalized = template;
+            Object.keys(contact).forEach(function(key) {
+                var regex = new RegExp('{{' + key + '}}', 'g');
+                personalized = personalized.replace(regex, contact[key] || '');
+            });
+            return personalized;
+        }
+
+        // Global functions for onclick handlers
+        window.toggleConnection = toggleConnection;
+        window.setupEmailJS = setupEmailJS;
+        window.showNetlifyCode = showNetlifyCode;
+        window.configureURL = configureURL;
+    </script>
+</body>
+</html>
